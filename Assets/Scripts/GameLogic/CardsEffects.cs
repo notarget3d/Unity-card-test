@@ -17,6 +17,7 @@ namespace GameLogic
 		[SerializeField, Range(1, 15)]
 		private int _maxSpawnCard = 9;
 
+		private bool _isSeqRunning;		// Avoid button press 2 time while seuence is running
 		private int _cardCount => _logicInstance.cardCount;
 		private int _randomCardIndex = -1;  // Used for random button sequence
 
@@ -57,37 +58,47 @@ namespace GameLogic
 
 		private async void OnPressSequence()
 		{
-			for (int i = 0; i < _cardCount; i++)
+			if (!_isSeqRunning)
 			{
-				Card card = _logicInstance.cardsInHand[i];
+				_isSeqRunning = true;
 
-				if (card != null)
+				for (int i = 0; i < _cardCount; i++)
 				{
-					ApplyRandomEffect(card);
-					if (card.dead)
-					{
-						i--;
-					}
+					Card card = _logicInstance.cardsInHand[i];
 
-					await Task.Delay(400);
+					if (card != null)
+					{
+						ApplyRandomEffect(card);
+						if (card.dead)
+						{
+							i--;
+						}
+
+						await Task.Delay(400);
+					}
 				}
+
+				_isSeqRunning = false;
 			}
 		}
 
 		private void OnPressRandonButton()
 		{
-			_randomCardIndex++;
-
-			if (_randomCardIndex >= _cardCount)
+			if (!_isSeqRunning)
 			{
-				_randomCardIndex = _cardCount == 0 ? -1 : 0;
-			}
+				_randomCardIndex++;
 
-			if (_randomCardIndex != -1)
-			{
-				Card card = _logicInstance.cardsInHand[_randomCardIndex];
+				if (_randomCardIndex >= _cardCount)
+				{
+					_randomCardIndex = _cardCount == 0 ? -1 : 0;
+				}
 
-				ApplyRandomEffect(card);
+				if (_randomCardIndex != -1)
+				{
+					Card card = _logicInstance.cardsInHand[_randomCardIndex];
+
+					ApplyRandomEffect(card);
+				}
 			}
 		}
 
